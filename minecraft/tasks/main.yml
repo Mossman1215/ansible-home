@@ -1,0 +1,46 @@
+---
+# tasks file for minecraft
+- name: update
+  apt:
+    update_cache: yes
+    upgrade: yes
+- name: install java 8 runtime
+  apt:
+    name: [openjdk-8-jre, aptitude, zip, tar, gzip]
+#create user for server
+#change ownership
+- name: make folder
+  file:
+    state: directory
+    path: /opt/minecraft
+- name: download server software
+  get_url:
+    url: http://solder.endermedia.com/repository/downloads/the-1710-pack/the-1710-pack_0.9.8b.zip
+    dest: /opt/minecraft/the-1710-pack_0.9.8b.zip
+- name: download vanilla
+  get_url:
+    url: https://launcher.mojang.com/v1/objects/3737db93722a9e39eeada7c27e7aca28b144ffa7/server.jar
+    dest: /opt/minecraft/vanilla-server.jar
+- name: unpack server software
+  unarchive:
+      src: /opt/minecraft/the-1710-pack_0.9.8b.zip # required. If C(remote_src=no) (default), local path to archive file to copy to the target server; can be absolute or relative. If C(remote_src=yes), path on the target server to existing archive file to unpack.,If C(remote_src=yes) and C(src) contains C(://), the remote machine will download the file from the URL first. (version_added 2.0). This is only for simple cases, for full download support use the M(get_url) module.
+      dest: /opt/minecraft # required. Remote absolute path where the archive should be unpacked.
+      copy: no
+#create systemd unit
+- name: "create systemd unit"
+  copy:
+    src: files/minecraft.service
+    dest: /etc/systemd/system/minecraft.service
+- name: start minecraft service
+  systemd:
+    name: minecraft # not required. Name of the service. When using in a chroot environment you always need to specify the full name i.e. (crond.service).
+    enabled: yes # not required. Whether the service should start on boot. B(At least one of state and enabled are required.)
+    daemon_reload: yes # not required. run daemon-reload before doing any other operations, to make sure systemd has read any changes.
+    state: started # not required. choices: reloaded;restarted;started;stopped. C(started)/C(stopped) are idempotent actions that will not run commands unless necessary. C(restarted) will always bounce the service. C(reloaded) will always reload.
+- name: 'download rclone for backups'
+  get_url:
+    url: https://downloads.rclone.org/rclone-current-linux-amd64.deb
+    dest: /opt/rclone.deb
+- name: Install rclone
+  apt:
+    deb: /opt/rclone.deb  

@@ -1,0 +1,10 @@
+[Unit]
+Description=Modded minecraft server
+After=network.target
+[Service]
+ExecStart=/opt/minecraft/LaunchServer.sh
+Type=simple
+PIDFile=/var/run/minecraft.pid
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure

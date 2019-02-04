@@ -1,0 +1,43 @@
+---
+# tasks file for raspbian
+- name: add Moss Account
+  user: 
+    name: moss
+    password: $6$.dkKuoM3h40cn$5tGdyPuEpojPn8jHuEAr5dUzrFG.b6.l7O/GEypD3JgS0GFCLJKyR75jtZdeJG98CBwVIXYFVtpflP7qbtM0t/
+    shell: /bin/bash
+    groups: sudo
+- name: Set authorized key in alternate location
+  authorized_key:
+    user: moss
+    state: present
+    key: "{{ lookup('file', './id_rsa.pub') }}"
+    manage_dir: False      
+- name: explicit user login
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: "{{item}}"
+  with_items:
+    - 'AllowUsers moss'
+    - 'DenyUsers pi'
+- name: key login only
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^{{item}}'
+    line: '{{item}} no'
+  with_items:
+    - 'ChallengeResponseAuthentication'
+    - 'PasswordAuthentication'
+- name: pt2
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^UsePAM'
+    line: 'UsePAM no'
+- name: restart sshd
+  service:
+    name: sshd
+    state: restarted
+- name: Instal fail2ban
+  apt:
+    name: [fail2ban]
+    update_cache: yes
+    state: present

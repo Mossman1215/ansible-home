@@ -1,0 +1,45 @@
+- hosts: fitlet
+  become: yes
+  become_user: root
+  become_method: su
+  vars:
+    ansible_python_interpreter: '/usr/local/bin/python2.7'
+  tasks:
+  - name: install java 8 runtime
+    pkgng:
+      name: [openjdk8-jre]
+      state: present
+  - name:
+    lineinfile:
+      path: /etc/fstab # required. The file to modify.,Before 2.3 this option was only usable as I(dest), I(destfile) and I(name).
+      line: '{{item}}' # not required. Required for C(state=present). The line to insert/replace into the file. If C(backrefs) is set, may contain backreferences that will get expanded with the C(regexp) capture groups if the regexp matches.
+    loop:
+      - "#	fdesc	/dev/fd		fdescfs		rw	0	0"
+      - "#	proc	/proc		procfs		rw	0	0"
+  #create user for server
+  #- name: "create user for server"
+  #  user:
+  #    name: minecraft # required. Name of the user to create, remove or modify.
+  #    shell: /sbin/nologin # not required. Optionally set the user's shell.,On macOS, before version 2.5, the default shell for non-system users was /usr/bin/false. Since 2.5, the default shell for non-system users on macOS is /bin/bash.
+  #change ownership
+  - name: make folder
+    file:
+      state: directory
+      path: /opt/minecraft
+  - name: download server software
+    get_url:
+      url: http://solder.endermedia.com/repository/downloads/the-1710-pack/the-1710-pack_0.9.8b.zip
+      dest: /opt/minecraft/the-1710-pack_0.9.8b.zip
+  - name: unpack server software
+    unarchive:
+        src: /opt/minecraft/the-1710-pack_0.9.8b.zip # required. If C(remote_src=no) (default), local path to archive file to copy to the target server; can be absolute or relative. If C(remote_src=yes), path on the target server to existing archive file to unpack.,If C(remote_src=yes) and C(src) contains C(://), the remote machine will download the file from the URL first. (version_added 2.0). This is only for simple cases, for full download support use the M(get_url) module.
+        dest: /opt/minecraft # required. Remote absolute path where the archive should be unpacked.
+        copy: no
+  #create systemd unit
+  #start server
+#This OpenJDK implementation requires fdescfs(5) mounted on /dev/fd and
+#procfs(5) mounted on /proc.
+#  To make it permanent, you need the following lines in /etc/fstab:
+
+#	fdesc	/dev/fd		fdescfs		rw	0	0
+#	proc	/proc		procfs		rw	0	0

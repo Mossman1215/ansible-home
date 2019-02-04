@@ -1,0 +1,37 @@
+---
+# tasks file for debian
+- name: Set authorized key in alternate location
+  authorized_key:
+    user: moss
+    state: present
+    key: "{{ lookup('file', 'files/id_rsa.pub') }}"
+    manage_dir: False      
+- name: explicit user login
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: "{{item}}"
+  with_items:
+    - 'AllowUsers moss'
+    - 'DenyUsers pi'
+- name: key login only
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^{{item}}'
+    line: '{{item}} no'
+  with_items:
+    - 'ChallengeResponseAuthentication'
+    - 'PasswordAuthentication'
+- name: pt2
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^UsePAM'
+    line: 'UsePAM no'
+- name: restart sshd
+  service:
+    name: sshd
+    state: restarted
+- name: Instal fail2ban
+  apt:
+    name: [fail2ban]
+    update_cache: yes
+    state: present

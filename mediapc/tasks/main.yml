@@ -1,0 +1,21 @@
+---
+# tasks file for mediapc
+
+- name: Update repos to include bleeding edge stable
+  apt_repository:
+    repo: "{{ item }}"
+    update_cache: yes
+    state: present
+  with_items:
+      - ppa:team-xbmc/ppa
+      - ppa:mdeslaur/steamos
+      - ppa:ubuntu-x-swat/updates
+- name: Update repositories cache and install packages in items
+  apt:
+    name: [steam,kodi,steamos-xpad-dkms]
+    update_cache: yes
+    state: present
+- name: Download MediaPC script
+  get_url:
+    url: https://raw.githubusercontent.com/Mossman1215/MediaPC-Script/master/loadAProgramLoop.sh
+    dest: /usr/local/bin/loadAProgramLoop.sh
