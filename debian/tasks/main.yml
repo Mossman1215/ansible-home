@@ -5,6 +5,7 @@
     name: cam
     groups: sudo
     password: $6$d0Syb.4Ig1e$2cA6qCXUErD1GZLpPAznwF7JbhW7/uQHnrjEFzMc.zARfkM93roi6T9LJ84IY1RHTrcB4el/QvQ8/7Z5/6PQw1
+    shell: /bin/bash
 - name: Set authorized key moss
   authorized_key:
     user: moss
