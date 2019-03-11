@@ -1,17 +1,27 @@
 ---
 # tasks file for debian
-- name: Set authorized key in alternate location
+- name: create cam user
+  user:
+    name: cam
+    groups: sudo
+    password: $6$d0Syb.4Ig1e$2cA6qCXUErD1GZLpPAznwF7JbhW7/uQHnrjEFzMc.zARfkM93roi6T9LJ84IY1RHTrcB4el/QvQ8/7Z5/6PQw1
+- name: Set authorized key moss
   authorized_key:
     user: moss
     state: present
     key: "{{ lookup('file', 'files/id_rsa.pub') }}"
-    manage_dir: False      
+- name: Set authorized key cam
+  authorized_key:
+    user: cam
+    state: present
+    key: "{{ lookup('file', 'files/id_rsa2.pub') }}"
 - name: explicit user login
   lineinfile:
     path: /etc/ssh/sshd_config
     line: "{{item}}"
   with_items:
     - 'AllowUsers moss'
+    - 'AllowUsers cam'
     - 'DenyUsers pi'
 - name: key login only
   lineinfile:
@@ -30,7 +40,7 @@
   service:
     name: sshd
     state: restarted
-- name: Instal fail2ban
+- name: Install fail2ban
   apt:
     name: [fail2ban]
     update_cache: yes

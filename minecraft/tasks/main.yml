@@ -6,13 +6,17 @@
     upgrade: yes
 - name: install java 8 runtime
   apt:
-    name: [openjdk-8-jre, aptitude, zip, tar, gzip]
+    name: [openjdk-8-jre, aptitude, zip, tar, gzip, tmux]
 #create user for server
+- name: create user
+  user:
+    name: minecraft 
 #change ownership
 - name: make folder
   file:
     state: directory
     path: /opt/minecraft
+    owner: minecraft
 - name: download server software
   get_url:
     url: http://solder.endermedia.com/repository/downloads/the-1710-pack/the-1710-pack_0.9.8b.zip
@@ -26,6 +30,12 @@
       src: /opt/minecraft/the-1710-pack_0.9.8b.zip # required. If C(remote_src=no) (default), local path to archive file to copy to the target server; can be absolute or relative. If C(remote_src=yes), path on the target server to existing archive file to unpack.,If C(remote_src=yes) and C(src) contains C(://), the remote machine will download the file from the URL first. (version_added 2.0). This is only for simple cases, for full download support use the M(get_url) module.
       dest: /opt/minecraft # required. Remote absolute path where the archive should be unpacked.
       copy: no
+- name: chown minecraft folder
+  file:
+    state: directory
+    path: /opt/minecraft
+    owner: minecraft
+    recurse: yes
 #create systemd unit
 - name: "create systemd unit"
   copy:

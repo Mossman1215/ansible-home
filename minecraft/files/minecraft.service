@@ -1,10 +1,20 @@
 [Unit]
-Description=Modded minecraft server
+Description=Minecraft Server
 After=network.target
+
 [Service]
-ExecStart=/opt/minecraft/LaunchServer.sh
-Type=simple
-PIDFile=/var/run/minecraft.pid
-ExecReload=/bin/kill -HUP $MAINPID
-KillMode=process
-Restart=on-failure
+WorkingDirectory=/opt/minecraft/
+
+User=minecraft
+Group=minecraft
+
+ExecStart=/usr/bin/tmux new-session -d -s mc /usr/bin/java -Xmx3G -Dfml.queryResult=confirm -jar forge-1.7.10-10.13.4.1614-1.7.10-universal.jar nogui
+
+ExecStop=/usr/bin/tmux attach -t mc eval 'stuff "say SERVER SHUTTING DOWN IN 5 SECONDS. SAVING ALL MAPS..."\015'
+ExecStop=/bin/sleep 5
+ExecStop=/usr/bin/tmux attach -t mc eval 'stuff "save-all"\015'
+ExecStop=/usr/bin/tmux attach -t mc eval 'stuff "stop"\015'
+
+
+[Install]
+WantedBy=multi-user.target
