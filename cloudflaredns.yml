@@ -1,0 +1,58 @@
+---
+- hosts: thinkcentre
+  become: yes
+  become_method: sudo
+  vars:
+    - FULL_ZONE: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          64643830663364326338323239393137616135396530313961373933383764633039366333346338
+          3032333265346132393834333731336264613839613034660a363336393830396335623430313335
+          32613137373338656234326262383238353338323032353137653135663532323035363936626531
+          3833393339316439630a336437616432373330363633373030646335613232353839386138653439
+          6537
+    - CF_ZONE: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          37643135653030666363313830623865303931313361613531666530373035396436306463303266
+          6134643538343963343431336338333831346362643035640a326131313331363334303439653163
+          65386362363534626138303366663433316635383866373638643165666537353561333935656566
+          3932333364386262300a613764303765653561633431666437303632623538653136356634383835
+          6462
+    - CF_KEY: !vault | 
+          $ANSIBLE_VAULT;1.1;AES256
+          65333665313732646165666364353332623035326533386564353065366434306365363137383930
+          3665356261613634306430313738643539383862633231370a386636633839383364366439366664
+          37313530316362353364333230303861353764323837393536386135663533303563376139623537
+          3539653730326264300a623833636139663032336231316561633363666433373837663962343539
+          36656235626139373532363263636435346361333731326162306162316362303866633436303232
+          3137353562643864663638653865306638366663336235393263
+    - CF_EMAIL:  !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          38343434313236376531643234343333363863663331323666646265346233616262633334393236
+          3934623935363033353638386634383530333238306135330a356564343531616435376530376162
+          32616166353364316635626432323966656432306139396630653330613061643833366431343066
+          3931643832336138380a613030303430303665303734623339633064323131356330663264623965
+          39386631333237616566323963326237626463396135386266366632363964356163
+  tasks:
+    - name: download cloudflared dns zip
+      get_url:
+          dest: /opt/cloudflare-ddns.zip # required. Absolute path of where to download the file to.,If C(dest) is a directory, either the server provided filename or, if none provided, the base name of the URL on the remote server will be used. If a directory, C(force) has no effect.,If C(dest) is a directory, the file will always be downloaded (regardless of the C(force) option), but replaced only if the contents changed..
+          url: https://codeload.github.com/adrienbrignon/cloudflare-ddns/zip/master
+    - name: unzip dir
+      unarchive:
+          src: /opt/cloudflare-ddns.zip # required. If C(remote_src=no) (default), local path to archive file to copy to the target server; can be absolute or relative. If C(remote_src=yes), path on the target server to existing archive file to unpack.,If C(remote_src=yes) and C(src) contains C(://), the remote machine will download the file from the URL first. (version_added 2.0). This is only for simple cases, for full download support use the M(get_url) module.
+          dest: /opt/ # required. Remote absolute path where the archive should be unpacked.
+          list_files: no # not required. If set to True, return the list of files that are contained in the tarball.
+          keep_newer: yes # not required. Do not replace existing files that are newer than files from the archive.
+          remote_src: yes
+    - name: install pip & python setuptools
+      apt:
+        name: [python,python-pip]
+        state: present
+    - name: install deps (pip)
+      pip:
+          requirements: /opt/cloudflare-ddns-master/requirements.txt # not required. The path to a pip requirements file, which should be local to the remote system. File can be specified as a relative path if using the chdir option.
+    - name: install config file
+      template:
+          dest: /opt/cloudflare-ddns-master/zones/{{FULL_ZONE}}.yml # required. Location to render the template to on the remote machine.
+          src: zone.yml.j2 # required. Path of a Jinja2 formatted template on the Ansible controller. This can be a relative or absolute path.
+          
