@@ -3,20 +3,13 @@
   become: yes
   become_method: sudo
   vars:
-    - FULL_ZONE: !vault |
+    - CF_ZONE: !vault |
           $ANSIBLE_VAULT;1.1;AES256
           64643830663364326338323239393137616135396530313961373933383764633039366333346338
           3032333265346132393834333731336264613839613034660a363336393830396335623430313335
           32613137373338656234326262383238353338323032353137653135663532323035363936626531
           3833393339316439630a336437616432373330363633373030646335613232353839386138653439
           6537
-    - CF_ZONE: !vault |
-          $ANSIBLE_VAULT;1.1;AES256
-          37643135653030666363313830623865303931313361613531666530373035396436306463303266
-          6134643538343963343431336338333831346362643035640a326131313331363334303439653163
-          65386362363534626138303366663433316635383866373638643165666537353561333935656566
-          3932333364386262300a613764303765653561633431666437303632623538653136356634383835
-          6462
     - CF_KEY: !vault | 
           $ANSIBLE_VAULT;1.1;AES256
           65333665313732646165666364353332623035326533386564353065366434306365363137383930
@@ -53,6 +46,11 @@
           requirements: /opt/cloudflare-ddns-master/requirements.txt # not required. The path to a pip requirements file, which should be local to the remote system. File can be specified as a relative path if using the chdir option.
     - name: install config file
       template:
-          dest: /opt/cloudflare-ddns-master/zones/{{FULL_ZONE}}.yml # required. Location to render the template to on the remote machine.
+          dest: /opt/cloudflare-ddns-master/zones/{{CF_ZONE}}.yml # required. Location to render the template to on the remote machine.
           src: zone.yml.j2 # required. Path of a Jinja2 formatted template on the Ansible controller. This can be a relative or absolute path.
-          
+    - name: update CF every hour at 3 past
+      cron:
+        name: '{{CF_ZONE}} DDNS'
+        minute: "3"
+        job: "/usr/bin/python /opt/cloudflare-ddns-master/cloudflare-ddns.py -z {{CF_ZONE}}"
+              
