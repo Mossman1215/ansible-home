@@ -1,0 +1,44 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: yes
+  tasks:
+    - name: Create a k8s namespace
+      k8s:
+          name: cert-manager
+          api_version: v1
+          kind: Namespace
+          state: present
+    #- name: apply label raw
+    #  command: kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
+    #kubectl create clusterrolebinding cluster-admin-binding \
+  #--clusterrole cluster-admin \
+  #--user mossman2142@gmail.com
+    - name: download cert-manager yml
+      get_url:
+          url: https://raw.githubusercontent.com/jetstack/cert-manager/release-0.7/deploy/manifests/cert-manager.yaml  
+          dest: files/cert-manager.yml
+      delegate_to: localhost
+      #--validate=false
+    - name: apply cert-manager yaml
+      k8s:
+        state: present
+        src: "{{ lookup('file', 'files/cert-manager.yml') }}"
+    - name: download nginx yml
+      get_url:
+        url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml  
+        dest: files/nginx-req.yml
+    - name: apply nginx requirements yaml
+      k8s:
+        state: present
+        src: "{{ lookup('file', 'files/nginx-req.yml') }}"
+    - name: download nginx yml
+      get_url:
+        url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/provider/cloud-generic.yaml
+        dest: files/nginx-deploy.yml
+    - name: apply nginx yaml
+      k8s:
+        state: present
+        src: "{{ lookup('file', 'files/nginx-deploy.yml') }}"  
+
+
