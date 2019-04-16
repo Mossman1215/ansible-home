@@ -53,4 +53,9 @@
     dest: /opt/rclone.deb
 - name: Install rclone
   apt:
-    deb: /opt/rclone.deb  
+    deb: /opt/rclone.deb
+- name: update CF every hour at 3 past
+  cron:
+    name: 'backup minecraft'
+    job: "/usr/bin/rclone copy /opt/minecraft/world gdrive:/world-backup/"
+    hour: '5'
