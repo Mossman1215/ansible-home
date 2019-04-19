@@ -2,43 +2,43 @@
 - hosts: localhost
   connection: local
   gather_facts: yes
+  vars:
+    - email: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          34396531366238393332386464383237383734346137383532383136633333353832373233613736
+          6537323933616261366535636131373637383865313232310a396161303833353264353635336232
+          36313334623565363263373931626433393138653439326462633339313634326165383335333363
+          3637353563333266310a646162623934336230613832303461643666383634356132343538616263
+          30373433626664333765366661343139396434653939303864316439663931376664
   tasks:
+    - name:
+      command: kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-admin --user '{{email}}'
     - name: Create a k8s namespace
       k8s:
           name: cert-manager
           api_version: v1
           kind: Namespace
           state: present
-    #- name: apply label raw
-    #  command: kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
-    #kubectl create clusterrolebinding cluster-admin-binding \
-  #--clusterrole cluster-admin \
-  #--user mossman2142@gmail.com
+    - name: apply label raw
+      command: kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
     - name: download cert-manager yml
       get_url:
           url: https://raw.githubusercontent.com/jetstack/cert-manager/release-0.7/deploy/manifests/cert-manager.yaml  
           dest: files/cert-manager.yml
       delegate_to: localhost
-      #--validate=false
     - name: apply cert-manager yaml
-      k8s:
-        state: present
-        src: "{{ lookup('file', 'files/cert-manager.yml') }}"
+      command: kubectl apply -f  'files/cert-manager.yml' --validate=false 
     - name: download nginx yml
       get_url:
         url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml  
         dest: files/nginx-req.yml
     - name: apply nginx requirements yaml
-      k8s:
-        state: present
-        src: "{{ lookup('file', 'files/nginx-req.yml') }}"
+      command: kubectl apply -f 'files/nginx-req.yml'
     - name: download nginx yml
       get_url:
         url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/provider/cloud-generic.yaml
         dest: files/nginx-deploy.yml
     - name: apply nginx yaml
-      k8s:
-        state: present
-        src: "{{ lookup('file', 'files/nginx-deploy.yml') }}"  
+      command: kubectl apply -f  'files/nginx-deploy.yml'
 
 
