@@ -16,7 +16,11 @@
   authorized_key:
     user: moss
     state: present
-    key: "{{ lookup('file', 'files/id_rsa.pub') }}"
+    key: '{{ item }}'
+  with_file:
+        - files/id_rsa.pub
+        - files/id_rsa4.pub
+        - files/ecdsa.pub
 - name: Set authorized key cam
   authorized_key:
     user: cam

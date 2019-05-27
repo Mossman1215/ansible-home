@@ -35,7 +35,9 @@
     state: directory
     path: /opt/minecraft
     owner: minecraft
+    group: users
     recurse: yes
+    mode: 0774
 #create systemd unit
 - name: "create systemd unit"
   copy:
