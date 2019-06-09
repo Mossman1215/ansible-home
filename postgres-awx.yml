@@ -1,0 +1,57 @@
+- hosts: default
+  become: yes
+  become_user: postgres
+  gather_facts: no
+#requires 
+#apt package acl
+#pip package psycopg2
+#which requires postgresql-server-dev-9.6
+  vars:
+    dbname: awx
+    dbuser: awxu
+    dbpassword: v29xHuiVtCLvWoGD
+
+  tasks:
+  - name: ensure database is created
+    postgresql_db: name={{dbname}}
+
+  - name: ensure user has access to database
+    postgresql_user: db={{dbname}} name={{dbuser}} password={{dbpassword}} priv=ALL
+
+  - name: ensure user does not have unnecessary privilege
+    postgresql_user: name={{dbuser}} role_attr_flags=NOSUPERUSER,NOCREATEDB
+  
+  - name: ensure no other user can access the database
+    postgresql_privs: db={{dbname}} role=PUBLIC type=database priv=ALL state=absent
+
+  #fixes ansible bug https://github.com/ansible/ansible/issues/56430
+  - name: remove debian default ipv6 entries
+    replace:
+      path: /etc/postgresql/9.6/main/pg_hba.conf
+      regexp: '^host\w+all\w+all\w+::1/128\w+md5'
+      line: "#host all all ::1/128 md5"
+      backup: yes
+    
+  - name: enable tcp connections
+    postgresql_pg_hba:
+      dest: /etc/postgresql/9.6/main/pg_hba.conf
+      contype: host
+      users: '{{dbuser}}'
+      source: "0.0.0.0/0"
+      databases: '{{dbname}}'
+      method: md5
+      create: true
+    register: hba_conf   
+
+  - name: enable address binding
+    lineinfile:
+      path: /etc/postgresql/9.6/main/postgresql.conf
+      regexp: '^listen_addresses'
+      line: "listen_addresses = '*'"
+    register: postgres_conf 
+
+  - name: restart postgres
+    service:
+      name: postgresql
+      state: restarted
+    when: postgres_conf.changed or hba_conf.changed

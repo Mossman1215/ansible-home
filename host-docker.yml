@@ -1,0 +1,18 @@
+- hosts: thinkcentre
+  become: true
+  tasks:
+  - name: enable backports (stretch)
+    apt_repository:
+        repo: deb http://deb.debian.org/debian stretch-backports main # required. A source string for the repository.
+        state: present # not required. choices: absent;present. A source string state.
+        update_cache: yes # not required. Run the equivalent of C(apt-get update) when a change occurs.  Cache updates are run after making changes.
+        mode: 0644 # not required. The octal mode for newly created files in sources.list.d
+  - name: install docker compose and nginx
+    apt: 
+      name: [docker-compose,nginx]
+  - name: install nginx and certbot
+    apt:
+      name: [certbot,python-certbot-nginx,python3-certbot-dns-cloudflare]
+      default_release: stretch-backports
+  # enable docker
+  #install docker CE: https://docs.docker.com/install/linux/docker-ce/debian/

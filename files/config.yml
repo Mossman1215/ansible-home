@@ -1,0 +1,3 @@
+hostname: awx.mountainmoss.nz
+url: http://localhost:8080
+logfile: /var/log/cloudflared.log
