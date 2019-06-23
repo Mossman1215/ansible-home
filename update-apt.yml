@@ -1,0 +1,9 @@
+- hosts: all
+  become: true
+  tasks: 
+  - name: update apt cache
+    apt:
+        update_cache: yes
+  - name: full upgrade all packages
+    apt:
+        upgrade: full # not required. choices: dist;full;no;safe;yes. If yes or safe, performs an aptitude safe-upgrade.,If full, performs an aptitude full-upgrade.,If dist, performs an apt-get dist-upgrade.,Note: This does not upgrade a specific package, use state=latest for that.,Note: Since 2.4, apt-get is used as a fall-back if aptitude is not present.
