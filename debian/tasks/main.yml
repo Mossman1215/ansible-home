@@ -21,6 +21,7 @@
         - files/id_rsa.pub
         - files/id_rsa4.pub
         - files/ecdsa.pub
+        - files/tower.pub
 - name: Set authorized key cam
   authorized_key:
     user: cam
