@@ -2,6 +2,14 @@
 - hosts: thinkcentre
   become: yes
   become_method: sudo
+  vars:
+  - CF_ZONE: !vault |
+        $ANSIBLE_VAULT;1.1;AES256
+        64643830663364326338323239393137616135396530313961373933383764633039366333346338
+        3032333265346132393834333731336264613839613034660a363336393830396335623430313335
+        32613137373338656234326262383238353338323032353137653135663532323035363936626531
+        3833393339316439630a336437616432373330363633373030646335613232353839386138653439
+        6537
   tasks:
     - name: download cloudflared deb
       become: no
@@ -13,7 +21,29 @@
       copy:
           dest: /opt/cloudflared-stable-linux-amd64.deb # required. Remote absolute path where the file should be copied to. If I(src) is a directory, this must be a directory too. If I(dest) is a nonexistent path and if either I(dest) ends with "/" or I(src) is a directory, I(dest) is created. If I(src) and I(dest) are files, the parent directory of I(dest) isn't created: the task fails if it doesn't already exist.
           src: files/cloudflared-stable-linux-amd64.deb # not required. Local path to a file to copy to the remote server; can be absolute or relative. If path is a directory, it is copied recursively. In this case, if path ends with "/", only inside contents of that directory are copied to destination. Otherwise, if it does not end with "/", the directory itself with all contents is copied. This behavior is similar to Rsync.
-    - name:
+    - name: "install cloudflare"
       apt:
           deb: /opt/cloudflared-stable-linux-amd64.deb # not required. Path to a .deb package on the remote machine.,If :// in the path, ansible will attempt to download deb before installing. (Version added 2.1)
           state: present
+    - name: "copy config files"
+      template:
+          dest: /etc/cloudflared/{{item}} # required. Remote absolute path where the file should be copied to. If I(src) is a directory, this must be a directory too. If I(dest) is a nonexistent path and if either I(dest) ends with "/" or I(src) is a directory, I(dest) is created. If I(src) and I(dest) are files, the parent directory of I(dest) isn't created: the task fails if it doesn't already exist.
+          src: templates/{{item}}.j2 # not required. Local path to a file to copy to the remote server; can be absolute or relative. If path is a directory, it is copied recursively. In this case, if path ends with "/", only inside contents of that directory are copied to destination. Otherwise, if it does not end with "/", the directory itself with all contents is copied. This behavior is similar to Rsync.
+      loop:
+        - "awx.yml"
+        - "grafana.yml"
+    - name: "copy systemd unit"
+      copy:
+        dest: /etc/systemd/system/cloudflared@.service
+        src: files/cloudflared@.service
+#    - name: install systemd unit
+#      systemd:
+#          no_block: no # not required. Do not synchronously wait for the requested operation to finish. Enqueued job will continue without Ansible blocking on its completion.
+#          force: undefined # not required. Whether to override existing symlinks.
+#          name: undefined # not required. Name of the service. When using in a chroot environment you always need to specify the full name i.e. (crond.service).
+#          enabled: undefined # not required. Whether the service should start on boot. B(At least one of state and enabled are required.)
+#          daemon_reload: no # not required. run daemon-reload before doing any other operations, to make sure systemd has read any changes.
+#          state: reloaded # not required. choices: reloaded;restarted;started;stopped. C(started)/C(stopped) are idempotent actions that will not run commands unless necessary. C(restarted) will always bounce the service. C(reloaded) will always reload.
+#          masked: undefined # not required. Whether the unit should be masked or not, a masked unit is impossible to start.
+#          scope: system # not required. choices: system;user;global. run systemctl within a given service manager scope, either as the default system scope (system), the current user's scope (user), or the scope of all users (global).
+#          user: no # not required. (deprecated) run ``systemctl`` talking to the service manager of the calling user, rather than the service manager of the system.,This option is deprecated and will eventually be removed in 2.11. The ``scope`` option should be used instead.:
