@@ -1,0 +1,23 @@
+---
+- hosts: thinkcentre
+  become: yes
+  become_method: sudo
+  vars:
+    pg_pwd: vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          30343633653837633539613038353230643735646135393366376363356634343362323061626363
+          6338623930303731326436396366313562643636316332320a333232653832353133653431363666
+          64663539306436363436343261356631313538636130666133356334323961343334636164616262
+          6233613162356332340a653361376232383734313039336637306435646230336465636261373461
+          34313830333661383637383664623735346237326636616435303130353332616538
+  tasks:
+    - name: create pgdump cron
+      cron:
+        name: 'pgdump awx'
+        job: "pg_dump awx -h localhost -U awxu -f /var/lib/awx/pg_bak -F c"
+        hour: '5'
+    - name: create awx backup crons
+      cron:
+        name: 'backup awx'
+        job: "/usr/bin/rclone copy /var/lib/awx gdrive:/awx_bak/"
+        hour: '7'
