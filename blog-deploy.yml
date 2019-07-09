@@ -3,9 +3,8 @@
   tasks:
     - name: 'clone blog repo'
       git:
-        dest: /tmp # required. The path of where the repository should be checked out. This parameter is required, unless C(clone) is set to C(no).
-        repo: ssh://git@github.com:Mossman1215/moss-blog.git # required. git, SSH, or HTTP(S) protocol address of the git repository.
-        force: yes# not required. If C(yes), any modified files in the working repository will be discarded.  Prior to 0.7, this was always 'yes' and could not be disabled.  Prior to 1.9, the default was `yes`
+        dest: /tmp/moss-blog # required. The path of where the repository should be checked out. This parameter is required, unless C(clone) is set to C(no).
+        repo: 'https://Mossman1215:{{github_secret}}@github.com/Mossman1215/moss-blog.git' # required. git, SSH, or HTTP(S) protocol address of the git repository.
         accept_hostkey: yes # not required. if C(yes), ensure that "-o StrictHostKeyChecking=no" is present as an ssh option.
         clone: yes # not required. If C(no), do not clone the repository if it does not exist locally
         update: yes # not required. If C(no), do not retrieve new revisions from the origin repository,Operations like archive will work on the existing (old) repository and might not respond to changes to the options version or remote.
