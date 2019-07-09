@@ -1,0 +1,29 @@
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: 'clone blog repo'
+      git:
+        dest: /tmp # required. The path of where the repository should be checked out. This parameter is required, unless C(clone) is set to C(no).
+        repo: ssh://git@github.com:Mossman1215/moss-blog.git # required. git, SSH, or HTTP(S) protocol address of the git repository.
+        force: yes# not required. If C(yes), any modified files in the working repository will be discarded.  Prior to 0.7, this was always 'yes' and could not be disabled.  Prior to 1.9, the default was `yes`
+        accept_hostkey: yes # not required. if C(yes), ensure that "-o StrictHostKeyChecking=no" is present as an ssh option.
+        clone: yes # not required. If C(no), do not clone the repository if it does not exist locally
+        update: yes # not required. If C(no), do not retrieve new revisions from the origin repository,Operations like archive will work on the existing (old) repository and might not respond to changes to the options version or remote.
+        remote: origin # not required. Name of the remote.
+        version: master # not required. What version of the repository to check out.  This can be the literal string C(HEAD), a branch name, a tag name. It can also be a I(SHA-1) hash, in which case C(refspec) needs to be specified if the given revision is not already available.
+    # download hugo
+    - name: run hugo
+      command: hugo -s /tmp/moss-blog
+    # run hugo
+    - name: sync site to s3
+      s3_sync:
+        file_root: /tmp/moss-blog/public # required. File/directory path for synchronization. This is a local path.,This root path is scrubbed from the key name, so subdirectories will remain as keys.
+        bucket: blog-mountainmoss # required. Bucket name.
+        mode: push # required. choices: push. sync direction.
+        file_change_strategy: force # not required. choices: force;checksum;date_size. Difference determination method to allow changes-only syncing. Unlike rsync, files are not patched- they are fully skipped or fully uploaded.,date_size will upload if file sizes don't match or if local file modified date is newer than s3's version,checksum will compare etag values based on s3's implementation of chunked md5s.,force will always upload all files.
+        permission: public-read;bucket-owner-full-control # not required. choices: ;private;public-read;public-read-write;authenticated-read;aws-exec-read;bucket-owner-read;bucket-owner-full-control. Canned ACL to apply to synced files.,Changing this ACL only changes newly synced files, it does not trigger a full reupload.
+        region: undefined # not required. The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See U(http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region)
+        exclude: .* # not required. Shell pattern-style file matching.,Used after include to remove files (for instance, skip "*.txt"),For multiple patterns, comma-separate them.
+        cache_control: 'public,must-revalidate,max-age=600' # not required. This is a string.,Cache-Control header set on uploaded objects.,Directives are separated by commmas.
+         # not required. In addition to file path, prepend s3 path with this prefix. Module will add slash at end of prefix if necessary.
+        delete: true # not required. Remove remote files that exist in bucket but are not present in the file root.
