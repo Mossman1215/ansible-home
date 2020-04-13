@@ -1,0 +1,33 @@
+
+#scp -r moss@10.10.6.74:/opt/minecraft-modded/world /home/moss/minecraft-map/minecraft-modded/
+- name: pull updated maps
+  command:
+    argv: 
+      - "scp"
+      - "-o" 
+      - "PasswordAuthentication=no"
+      - "-r"
+      - "moss@10.10.6.74:/opt/minecraft-modded/world"
+      - "/home/moss/minecraft-map/"
+  delegate_to: thinkcentre
+  become: no
+- name: "run overviewer"
+  command:
+    argv:
+      - "./overviewer.py"
+      - "--rendermodes=smooth-lighting"
+      - "/home/moss/minecraft-map/world"
+      - "/tmp/map-files"
+    chdir: "/home/moss/Minecraft-Overviewer/"
+- name: remove old map files
+  file:
+    state: absent
+    path: /var/www/map-files
+- name: move directory
+  command: "mv /tmp/map-files /var/www/"
+- name: set permissions
+  file:
+    state: directory
+    owner: www-data
+    group: www-data
+    path: /var/www/map-files
