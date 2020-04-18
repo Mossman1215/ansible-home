@@ -1,0 +1,49 @@
+---
+- hosts: thinkcentre
+  become: yes
+  become_method: sudo
+  vars:
+  - CF_ZONE: !vault |
+        $ANSIBLE_VAULT;1.1;AES256
+        64643830663364326338323239393137616135396530313961373933383764633039366333346338
+        3032333265346132393834333731336264613839613034660a363336393830396335623430313335
+        32613137373338656234326262383238353338323032353137653135663532323035363936626531
+        3833393339316439630a336437616432373330363633373030646335613232353839386138653439
+        6537
+  tasks:
+    - name: download cloudflared deb
+      become: no
+      get_url:
+          dest: files/cloudflared-stable-linux-amd64.deb # required. Absolute path of where to download the file to.,If C(dest) is a directory, either the server provided filename or, if none provided, the base name of the URL on the remote server will be used. If a directory, C(force) has no effect.,If C(dest) is a directory, the file will always be downloaded (regardless of the C(force) option), but replaced only if the contents changed..
+          url: https://bin.equinox.io/c/VdrWdbjqyF/cloudflared-stable-linux-amd64.deb # required. HTTP, HTTPS, or FTP URL in the form (http|https|ftp)://[user[:pass]]@host.domain[:port]/path
+      delegate_to: localhost
+    - name: copy cloudflared
+      copy:
+          dest: /opt/cloudflared-stable-linux-amd64.deb # required. Remote absolute path where the file should be copied to. If I(src) is a directory, this must be a directory too. If I(dest) is a nonexistent path and if either I(dest) ends with "/" or I(src) is a directory, I(dest) is created. If I(src) and I(dest) are files, the parent directory of I(dest) isn't created: the task fails if it doesn't already exist.
+          src: files/cloudflared-stable-linux-amd64.deb # not required. Local path to a file to copy to the remote server; can be absolute or relative. If path is a directory, it is copied recursively. In this case, if path ends with "/", only inside contents of that directory are copied to destination. Otherwise, if it does not end with "/", the directory itself with all contents is copied. This behavior is similar to Rsync.
+    - name: "install cloudflare"
+      apt:
+          deb: /opt/cloudflared-stable-linux-amd64.deb # not required. Path to a .deb package on the remote machine.,If :// in the path, ansible will attempt to download deb before installing. (Version added 2.1)
+          state: present
+    - name: "copy config files"
+      template:
+          dest: /etc/cloudflared/{{item}} # required. Remote absolute path where the file should be copied to. If I(src) is a directory, this must be a directory too. If I(dest) is a nonexistent path and if either I(dest) ends with "/" or I(src) is a directory, I(dest) is created. If I(src) and I(dest) are files, the parent directory of I(dest) isn't created: the task fails if it doesn't already exist.
+          src: templates/{{item}}.j2 # not required. Local path to a file to copy to the remote server; can be absolute or relative. If path is a directory, it is copied recursively. In this case, if path ends with "/", only inside contents of that directory are copied to destination. Otherwise, if it does not end with "/", the directory itself with all contents is copied. This behavior is similar to Rsync.
+      loop:
+        - "awx.yml"
+        - "grafana.yml"
+        - "map.yml"
+    - name: "copy systemd unit"
+      copy:
+        dest: /etc/systemd/system/cloudflared@.service
+        src: files/cloudflared@.service
+    - name: install systemd unit
+      systemd:
+          name: cloudflared@{{item}}.service # not required. Name of the service. When using in a chroot environment you always need to specify the full name i.e. (crond.service).
+          enabled: yes # not required. Whether the service should start on boot. B(At least one of state and enabled are required.)
+          daemon_reload: yes # not required. run daemon-reload before doing any other operations, to make sure systemd has read any changes.
+          state: started # not required. choices: reloaded;restarted;started;stopped. C(started)/C(stopped) are idempotent actions that will not run commands unless necessary. C(restarted) will always bounce the service. C(reloaded) will always reload.
+      loop:
+        - "awx"
+        - "grafana"
+        - "map"

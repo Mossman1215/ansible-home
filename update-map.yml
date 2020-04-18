@@ -1,0 +1,6 @@
+- hosts: thinkcentre
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: "start map update"
+      import_tasks: minecraft-map/tasks/update-map.yml
