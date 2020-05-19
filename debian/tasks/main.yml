@@ -1,11 +1,5 @@
 ---
 # tasks file for debian
-- name: create matt user
-  user:
-    name: matt
-    groups: sudo
-    password: $6$RKPLeGflbTy0uYY$209Fqn1zfS3TPsZ.AFjYVWvRuMHoFK1.DNI9VuJ28.bFnzqoTtLFqgPUjOxaLnmwW7ATfmmaUrnhmge76J6FY/
-    shell: /bin/bash
 - name: create cam user
   user:
     name: cam
@@ -27,11 +21,6 @@
     user: cam
     state: present
     key: "{{ lookup('file', 'files/id_rsa2.pub') }}"
-- name: Set authorized key matt
-  authorized_key:
-    user: matt
-    state: present
-    key: "{{ lookup('file', 'files/id_rsa3.pub') }}"
 - name: explicit user login
   lineinfile:
     path: /etc/ssh/sshd_config
