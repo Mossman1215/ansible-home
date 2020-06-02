@@ -1,0 +1,10 @@
+language: python
+
+services:
+  - docker
+
+before_install:
+  - docker build -t my-ansible:latest .
+
+script:
+- docker run -t my-ansible:latest ansible-playbook travis-test.yml
