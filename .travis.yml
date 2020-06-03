@@ -7,4 +7,4 @@ before_install:
   - docker build -t my-ansible:latest .
 
 script:
-- ansible-playbook travis-test.yml
+- docker run -t my-ansible:latest ansible-playbook /ansible-home/tests/travis-test.yml
