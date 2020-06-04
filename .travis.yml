@@ -4,7 +4,10 @@ services:
   - docker
 
 before_install:
-  - docker build -t my-ansible:latest .
+  - docker build -t mossman1215/ansible:latest .
 
 script:
-- docker run -t my-ansible:latest ansible-playbook /ansible-home/tests/travis-test.yml
+- docker run -t mossman1215/ansible:latest ansible-playbook /ansible-home/tests/travis-test.yml
+- docker run -t mossman1215/ansible:latest ansible-playbook -i /ansible-home/tests/inventory.yml /ansible-home/setup-debian.yml
+- docker run -t mossman1215/ansible:latest ansible-playbook -i /ansible-home/tests/inventory.yml /ansible-home/thinkcentre.yml
+- docker run -t mossman1215/ansible:latest ansible-playbook -i /ansible-home/tests/inventory.yml /ansible-home/brix.yml
