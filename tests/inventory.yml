@@ -9,3 +9,6 @@ all:
         minecraft:
             hosts:
                 localhost:
+        brix:
+            hosts:
+                localhost:

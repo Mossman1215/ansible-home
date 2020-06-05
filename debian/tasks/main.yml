@@ -1,5 +1,11 @@
 ---
 # tasks file for debian
+- name: ensure my user exists
+  user:
+    name: moss
+    groups: sudo
+    shell: /bin/bash
+    state: present
 - name: create cam user
   user:
     name: cam
@@ -46,6 +52,7 @@
   service:
     name: sshd
     state: restarted
+  when: ansible_virtualization_type != "docker"
 - name: Install fail2ban
   apt:
     name: [fail2ban]
