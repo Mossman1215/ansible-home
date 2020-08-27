@@ -1,0 +1,14 @@
+all:
+    hosts:
+        localhost:
+            ansible_connection: local
+    children:
+        thinkcentre:
+            hosts:
+                localhost:
+        minecraft:
+            hosts:
+                localhost:
+        brix:
+            hosts:
+                localhost:
