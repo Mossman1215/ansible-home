@@ -1,4 +1,4 @@
-- hosts: thinkcentre
+- hosts: docker
   become: true
   tasks:
   - name: enable docker deb source
