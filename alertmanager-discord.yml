@@ -1,0 +1,17 @@
+hosts: thinkcentre
+become: yes
+tasks:
+  - name: "copy binary"
+    copy:
+      dest: /usr/local/bin/alertmanager-discord
+      src: files/alertmanager-discord
+  - name: "copy systemd unit"
+    copy:
+      dest: /etc/systemd/system/alertmanager-discord.service
+      src: files/alertmanager-discord.service
+  - name: install systemd unit
+    systemd:
+        name: alertmanager-discord.service # not required. Name of the service. When using in a chroot environment you always need to specify the full name i.e. (crond.service).
+        enabled: yes # not required. Whether the service should start on boot. B(At least one of state and enabled are required.)
+        daemon_reload: yes # not required. run daemon-reload before doing any other operations, to make sure systemd has read any changes.
+        state: started

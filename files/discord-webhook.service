@@ -1,0 +1,14 @@
+[Unit]
+Description=Discord Webhook server
+After=network.target
+
+[Service]
+TimeoutStartSec=0
+Type=simple
+Environment=DISCORD_WEBHOOK=https://discordapp.com/api/webhooks/807767986114658326/zcN8oRNmC4zVMSXLN4kSR3wl-NWS7n2f59cZw7R3A41-GMbAyXgxVmXAwkJZqigI3GRD
+ExecStart=/usr/local/bin/alertmanager-discord
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
