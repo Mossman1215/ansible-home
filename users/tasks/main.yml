@@ -1,0 +1,58 @@
+---
+# tasks file for debian
+- name: ensure my user exists
+  user:
+    name: moss
+    groups: sudo
+    shell: /bin/bash
+    state: present
+  when: ansible_os_family == "Debian"
+- name: create cam user
+  user:
+    name: cam
+    groups: sudo
+    password: $6$Hyvs44j/gvrqqx$0uzOHvEg9yn829Pok4fXqzYLKc/puMaFuLSSXWwhZ3JI77.oYS5H9l7GFnLB52yU.5w5XPEKu47H4teEDh4sG0
+    shell: /bin/bash
+  when: ansible_os_family == "Debian"
+- name: Set authorized key moss
+  authorized_key:
+    user: moss
+    state: present
+    key: '{{ item }}'
+  with_file:
+        - files/id_rsa.pub
+        - files/id_rsa4.pub
+        - files/ecdsa.pub
+        - files/tower.pub
+        - files/mosshome.pub
+- name: Set authorized key cam
+  authorized_key:
+    user: cam
+    state: present
+    key: "{{ lookup('file', 'files/id_rsa2.pub') }}"
+- name: explicit user login
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: "{{item}}"
+  with_items:
+    - 'AllowUsers moss'
+    - 'AllowUsers cam'
+    - 'DenyUsers pi'
+- name: key login only
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^{{item}}'
+    line: '{{item}} no'
+  with_items:
+    - 'ChallengeResponseAuthentication'
+    - 'PasswordAuthentication'
+- name: pt2
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^UsePAM'
+    line: 'UsePAM no'
+- name: restart sshd
+  service:
+    name: sshd
+    state: restarted
+  when: ansible_virtualization_type != "docker"
