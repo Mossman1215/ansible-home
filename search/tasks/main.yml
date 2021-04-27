@@ -1,0 +1,14 @@
+---
+# tasks file for search
+uri:
+ src: https://apache.inspire.net.nz/lucene/solr/{{solr_version}}/solr-{{solr_version}}.tgz
+ dest: /opt/solr
+ creates: /opt/solr/solr-{{solr_version}}.tgz
+apt:
+  name: openjdk-11-jre
+  state: present
+when: ansible_facts.os.family == "Debian"
+yum:
+  name: java-11-openjdk
+  state: present
+when: ansible_facts.os.family == "Redhat"
