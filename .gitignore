@@ -2,3 +2,4 @@ hosts.ini
 *.retry
 *.json
 bertvv.samba/*
+.vagrant
