@@ -1,0 +1,6 @@
+---
+# tasks file for vector-agent
+- include: "{{role_path}}/redhat.yml"
+  when: ansible.os_family == "RedHat"
+- include: "{{role_path}}/debian.yml"
+  when: ansible.os_family == "Debian"
