@@ -1,0 +1,21 @@
+---
+# tasks file for loki
+- name: download loki
+  get_url:
+    url: https://github.com/grafana/loki/releases/latest/download/loki-linux-amd64.zip
+    dest: /opt/
+- name:
+  file:
+    path: /opt/loki
+    state: directory  
+- name: unpack loki
+  unarchive:
+    src: /opt/loki-linux-amd64.zip
+    dest: /opt/loki/
+    remote_src: yes
+- name: download conf
+  get_url:
+    url:  https://raw.githubusercontent.com/grafana/loki/master/cmd/loki/loki-local-config.yaml
+    dest: /opt/loki/
+- name: 
+  command: systemd-run /opt/loki/loki-linux-amd64 -config.file=/opt/loki/loki-local-config.yaml
