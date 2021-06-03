@@ -1,0 +1,12 @@
+- name: copy setup script
+  copy:
+    src: "{{role_path}}/files/bash.deb.sh"
+    dest: /tmp/bash.deb.sh
+    mode: u=rwx,g=r,o=r
+- name: run setup script
+  command: "/tmp/bash.deb.sh"
+- name: install vector
+  apt:
+    name: vector
+    state: present
+    update_cache: yes

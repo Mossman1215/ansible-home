@@ -1,0 +1,27 @@
+#                                    __   __  __
+#                                    \ \ / / / /
+#                                     \ V / / /
+#                                      \_/  \/
+#
+#                                    V E C T O R
+#                                   Configuration
+#
+# ------------------------------------------------------------------------------
+# Website: https://vector.dev
+# Docs: https://vector.dev/docs
+# Chat: https://chat.vector.dev
+# ------------------------------------------------------------------------------
+
+# Change this to use a non-default directory for Vector data storage:
+# data_dir = "/var/lib/vector"
+[api]
+enabled = true
+
+[sources.journald]
+type = "journald"
+
+[sinks.out]
+type = "honeycomb"
+inputs = [ "journald" ]
+api_key = "{{honeycomb_api_key}}"
+dataset = "my-honeycomb-dataset"

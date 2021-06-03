@@ -1,18 +1,10 @@
-- rpm_key:
-  state: present
-  key: https://repositories.timber.io/public/vector/gpg.3543DB2D0A2BC4B8.key
-- yum_repository:
-  name: timber-vector
-  baseurl: https://repositories.timber.io/public/vector/rpm/el/8/$basearch
-  gpgkey: https://repositories.timber.io/public/vector/gpg.3543DB2D0A2BC4B8.key
-- yum_repository:
-  name: timber-vector-noarch
-  baseurl: https://repositories.timber.io/public/vector/rpm/el/8/noarch
-  gpgkey: https://repositories.timber.io/public/vector/gpg.3543DB2D0A2BC4B8.key
-- yum_repository:
-  name: timber-vector-source
-  baseurl: https://repositories.timber.io/public/vector/rpm/el/8/source
-  gpgkey: https://repositories.timber.io/public/vector/gpg.3543DB2D0A2BC4B8.key
+- name: copy setup script
+  copy:
+    src: "{{role_path}}/files/bash.rpm.sh"
+    dest: /tmp/bash.rpm.sh
+    mode: u=rwx,g=r,o=r
+- name: run setup script
+  command: "/tmp/bash.rpm.sh"
 - dnf:
     name: vector
     state: latest
