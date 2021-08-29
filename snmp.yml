@@ -1,0 +1,7 @@
+
+- hosts: fitlet
+  become: yes
+  roles:
+  - cloudalchemy.snmp-exporter
+  vars:
+    snmp_exporter_version: 0.20.0

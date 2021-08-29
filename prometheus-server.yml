@@ -3,7 +3,6 @@
   become: yes
   roles:
   - cloudalchemy.prometheus
-  - cloudalchemy.snmp-exporter
   vars:
     prometheus_targets:
       node:
@@ -29,10 +28,9 @@
         - source_labels: [__param_target]
           target_label: instance
         - target_label: __address__
-          replacement: 127.0.0.1:9116 
+          replacement: 192.168.1.24:9116 
     - job_name: "node-file-servicediscovery"
       file_sd_configs:
         - files:
             - "{{ prometheus_config_dir }}/file_sd/node.yml" # This line loads file created from `prometheus_targets
-    snmp_exporter_version: 0.20.0
     
