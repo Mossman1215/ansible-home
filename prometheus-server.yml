@@ -1,7 +1,9 @@
 ---
 - hosts: thinkcentre
+  become: yes
   roles:
   - cloudalchemy.prometheus
+  - cloudalchemy.snmp-exporter
   vars:
     prometheus_targets:
       node:
@@ -10,6 +12,27 @@
         - 192.168.1.22:9100
         - 192.168.1.24:9100 
         - 192.168.1.23:9100
-        - 192.168.1.34:9182
+        - 192.168.1.40:9182
         labels:
           env: home
+    prometheus_scrape_configs:
+    - job_name: router-snmp
+      static_configs:
+      - targets:
+        - 192.168.1.1  # SNMP device.
+      metrics_path: /snmp
+      params:
+        module: [if_mib]
+      relabel_configs:
+        - source_labels: [__address__]
+          target_label: __param_target
+        - source_labels: [__param_target]
+          target_label: instance
+        - target_label: __address__
+          replacement: 127.0.0.1:9116 
+    - job_name: "node-file-servicediscovery"
+      file_sd_configs:
+        - files:
+            - "{{ prometheus_config_dir }}/file_sd/node.yml" # This line loads file created from `prometheus_targets
+    snmp_exporter_version: 0.20.0
+    
