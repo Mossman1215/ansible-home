@@ -1,0 +1,3 @@
+- hosts: thinkcentre
+  roles:
+    - cloudalchemy.blackbox-exporter
