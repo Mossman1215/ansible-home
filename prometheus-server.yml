@@ -34,4 +34,20 @@
       file_sd_configs:
         - files:
             - "{{ prometheus_config_dir }}/file_sd/node.yml" # This line loads file created from `prometheus_targets
-    
+    - job_name: 'blackbox'
+      metrics_path: /probe
+      params:
+        module: [http_2xx]  # Look for a HTTP 200 response.
+      scrape_interval: 24h
+      static_configs:
+        - targets:
+          - https://blog.mountainmoss.nz   # blog
+          - http://grafana.mountainmoss.nz # grafana
+      relabel_configs:
+        - source_labels: [__address__]
+          target_label: __param_target
+        - source_labels: [__param_target]
+          target_label: instance
+        - target_label: __address__
+          replacement: "[::]:9115"  # The blackbox exporter's real hostname:port.
+      
