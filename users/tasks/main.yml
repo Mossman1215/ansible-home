@@ -25,6 +25,7 @@
         - files/ecdsa.pub
         - files/tower.pub
         - files/mosshome.pub
+        - files/phone.pub
 - name: Set authorized key cam
   authorized_key:
     user: cam
