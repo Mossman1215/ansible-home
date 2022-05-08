@@ -1,0 +1,10 @@
+- name: define vm from xml and set autostart
+  community.libvirt.virt:
+    command: define
+    name: foo
+    xml: "{{ lookup('template', 'vm_template.xml.j2') }}"
+    autostart: yes
+- name: start vm
+  community.libvirt.virt:
+    name: foo
+    state: running

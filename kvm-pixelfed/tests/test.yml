@@ -1,0 +1,36 @@
+---
+- hosts: localhost
+  vars:
+    - base_image: "{{ '../files/images/CentOS-Stream-GenericCloud-9-20220425.0.x86_64.qcow2' | realpath }}"
+    - images_path: "../files/{{ name }}/" 
+    - images_dir: "{{ images_path | realpath }}"
+    - host: localhost
+    - os: centos-stream9
+    - ram: 2048
+    - name: pixelfed-test
+    - image_capacity: 10G
+    - vcpus: 1
+  tasks:
+    - name: Create images directory
+      file:
+        path: '{{ images_dir }}'
+        state: directory
+
+    - name: Create VM image from base image
+      command: qemu-img create -b {{ base_image }} -f qcow2 -F qcow2 {{ images_dir }}/{{ name }}.img {{ image_capacity }}
+
+    # - name: Create user-data
+    #   template:
+    #     src: user-data.j2
+    #     dest: '{{ images_dir }}/user-data'
+
+    # - name: Create meta-data
+    #   template:
+    #     src: meta-data.j2
+    #     dest: '{{ images_dir }}/meta-data'
+
+    - name: Create cloud-init configuration image
+      command: genisoimage -output {{ images_dir }}/{{ name }}-cidata.iso -V cidata -r -J {{ images_dir }}/user-data {{ images_dir }}/meta-data
+
+    - name: Create the VM
+      command: virt-install --name={{ name }} --ram={{ ram }} --vcpus={{ vcpus }} --import --disk path={{ images_dir }}/{{ name }}.img,format=qcow2 --disk path={{ images_dir }}/{{ name }}-cidata.iso,device=cdrom --os-variant {{ os }} --network bridge=virbr0,model=virtio --graphics vnc,listen=0.0.0.0 --noautoconsole
