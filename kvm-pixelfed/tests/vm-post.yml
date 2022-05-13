@@ -1,0 +1,5 @@
+- hosts: virtual
+  become: yes
+  tasks:
+    - name: import pixelfed setup steps
+      import_tasks: ../tasks/pixelfed.yml

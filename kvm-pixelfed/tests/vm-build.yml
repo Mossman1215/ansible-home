@@ -19,15 +19,15 @@
     - name: Create VM image from base image
       command: qemu-img create -b {{ base_image }} -f qcow2 -F qcow2 {{ images_dir }}/{{ name }}.img {{ image_capacity }}
 
-    # - name: Create user-data
-    #   template:
-    #     src: user-data.j2
-    #     dest: '{{ images_dir }}/user-data'
+    - name: Create user-data
+      copy:
+        src: user-data
+        dest: "{{ '../files' | realpath }}/user-data"
 
-    # - name: Create meta-data
-    #   template:
-    #     src: meta-data.j2
-    #     dest: '{{ images_dir }}/meta-data'
+    - name: Create meta-data
+      copy:
+        src: meta-data
+        dest: "{{ '../files' | realpath }}/meta-data"
 
     - name: Create cloud-init configuration image
       command: genisoimage -output {{ images_dir }}/{{ name }}-cidata.iso -V cidata -r -J {{ images_dir }}/user-data {{ images_dir }}/meta-data

@@ -1,0 +1,95 @@
+---
+
+- name: install rpmfusion epel repos
+  dnf:
+    name: 
+      - https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+      - https://download1.rpmfusion.org/free/el/rpmfusion-free-release-9.noarch.rpm
+      - https://download1.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-9.noarch.rpm
+    state: present
+#dnf install ffmpeg
+- name: ffmpeg composer
+  dnf:
+    name: 
+      - ffmpeg
+      - composer
+    state: present
+#http://prdownloads.sourceforge.net/optipng/optipng-0.7.7.tar.gz?download
+#configure
+#make install
+
+#git clone https://github.com/tjko/jpegoptim.git
+#configure
+#make install
+
+#git clone --recurse-submodules --remote-submodules https://github.com/kornelski/pngquant
+#cargo install?
+- name: pngquant clone
+  git:
+    accept_newhostkey: yes
+    repo: https://github.com/kornelski/pngquant
+    dest: /opt/pngquant
+- name: pngquant install
+  command:
+    cmd: cargo build --release
+    chdir: /opt/pngquant
+- name: copy pngquant
+  copy:
+    remote_src: yes
+    src: /opt/pngquant/target/release/pngquant
+    dest: /usr/local/bin/
+- name: pixelfed clone
+  git:
+    accept_newhostkey: yes
+    repo: https://github.com/pixelfed/pixelfed.git
+    dest: /home/pixelfed/pixelfed
+    single_branch: yes
+    version: dev
+#setup database
+
+#user: pixelfed
+
+# cd /etc/php/php-fpm.d/
+# cp www.conf pixelfed.conf
+# $EDITOR pixelfed.conf
+
+#https://github.com/mailhog/MailHog/releases/download/v1.0.1/MailHog_windows_amd64.exe
+
+# web apps folder
+# set permissions
+# environment vars
+# composer install
+# mailhog?
+
+# One time only, you need to generate the secret APP_KEY:
+
+# php artisan key:generate
+
+# One time only, the storage/ directory must be linked to the application:
+
+# php artisan storage:link
+
+# Database migrations must be run:
+
+# php artisan migrate --force
+
+# If you want to enable support for location data:
+
+# php artisan import:cities
+
+# If you enabled ActivityPub federation:
+
+# php artisan instance:actor
+
+# If you enabled OAuth:
+
+# php artisan passport:keys
+
+# Routes should be cached whenever the source code changes or whenever you change routes:
+
+# php artisan route:cache
+# php artisan view:cache
+
+# Every time you edit your .env file, you must run this command to have the changes take effect:
+
+# php artisan config:cache

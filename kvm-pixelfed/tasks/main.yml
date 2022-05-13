@@ -1,3 +1,4 @@
+---
 - name: define vm from xml and set autostart
   community.libvirt.virt:
     command: define
