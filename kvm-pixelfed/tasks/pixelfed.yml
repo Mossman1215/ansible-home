@@ -46,6 +46,36 @@
     single_branch: yes
     version: dev
 #setup database
+- name: copy mysql script
+  copy:
+    src: "../files/mysql_secure.sh"
+    dest: /opt/mysql_secure.sh
+    mode: 0700
+# - name: run mysql setup
+#   command:
+#     cmd: /opt/mysql_secure.sh {{ db_root_password }}
+- name: ensure dir
+  file:
+    path: /etc/mysql
+    state: directory
+- name: build my.cnf file
+  template:
+    src: ../templates/my.cnf.j2
+    dest: /etc/mysql/my.cnf
+- name: create db user conf
+  template:
+    src: ../templates/pixelfed.cnf.j2
+    dest: /home/pixelfed/.my.cnf
+- name: make db user
+  command:
+    cmd: "mysql -e \"CREATE USER IF NOT EXISTS 'pixelfed'@'localhost' IDENTIFIED BY '{{ db_password }}';\""
+- name: make db
+  command:
+    cmd: "mysql -e \"CREATE DATABASE IF NOT EXISTS pixelfed CHARACTER SET utf8mb4\""
+- name: set priviledges
+  command:
+    cmd: "mysql -e \" GRANT ALL PRIVILEGES ON pixelfed.* TO 'pixelfed'@'localhost';\""
+
 
 #user: pixelfed
 
