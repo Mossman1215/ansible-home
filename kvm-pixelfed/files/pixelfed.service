@@ -1,0 +1,16 @@
+[Unit]
+Description=Pixelfed task queue worker
+After=network.target
+Requires=mariadb
+Requires=php-fpm
+Requires=redis
+Requires=nginx
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/php /home/pixelfed/pixelfed/queue work
+Restart=on-failure
+User=pixelfed
+Group=pixelfed
+[Install]
+WantedBy=multi-user.target
