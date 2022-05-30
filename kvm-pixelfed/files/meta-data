@@ -1,0 +1,3 @@
+#cloud-config
+instance-id: pixelfed-test
+local-hostname: pixelfed-test

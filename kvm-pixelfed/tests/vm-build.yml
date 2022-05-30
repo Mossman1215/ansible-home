@@ -9,7 +9,7 @@
     - ram: 2048
     - name: pixelfed-test
     - image_capacity: 10G
-    - vcpus: 1
+    - vcpus: 2
   tasks:
     - name: Create images directory
       file:
@@ -21,16 +21,17 @@
 
     - name: Create user-data
       copy:
-        src: user-data
-        dest: "{{ '../files' | realpath }}/user-data"
+        src: "{{ '../files' | realpath }}/user-data"
+        dest: "{{ images_dir }}/user-data"
 
     - name: Create meta-data
       copy:
-        src: meta-data
-        dest: "{{ '../files' | realpath }}/meta-data"
+        src: "{{ '../files' | realpath }}/meta-data"
+        dest: "{{ images_dir }}/meta-data"
 
     - name: Create cloud-init configuration image
       command: genisoimage -output {{ images_dir }}/{{ name }}-cidata.iso -V cidata -r -J {{ images_dir }}/user-data {{ images_dir }}/meta-data
 
     - name: Create the VM
       command: virt-install --name={{ name }} --ram={{ ram }} --vcpus={{ vcpus }} --import --disk path={{ images_dir }}/{{ name }}.img,format=qcow2 --disk path={{ images_dir }}/{{ name }}-cidata.iso,device=cdrom --os-variant {{ os }} --network bridge=virbr0,model=virtio --graphics vnc,listen=0.0.0.0 --noautoconsole
+      become: yes
