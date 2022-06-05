@@ -31,5 +31,6 @@ packages:
  - php-mysqlnd
  - php-phpiredis
  - redis
+ - git
 timezone: Pacific/Auckland
 
