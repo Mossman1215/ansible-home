@@ -1,0 +1,115 @@
+---
+#apt install composer
+- name: composer
+  apt:
+    name: 
+      - composer
+    state: present
+- name: ensure dir
+  file:
+    path: /web/firefly
+    state: directory
+    owner: firefly
+    group: httpd
+- name: firefly clone
+  command: 
+    cmd: composer create-project grumpydictator/firefly-iii --no-dev --prefer-dist firefly-iii 5.7.9
+    chdir: /web/firefly
+    creates: /web/firefly/vendor/autoload.php
+#setup database
+- name: ensure dir
+  file:
+    path: /etc/mysql
+    state: directory
+- name: build my.cnf file
+  template:
+    src: ../templates/my.cnf.j2
+    dest: /etc/mysql/my.cnf
+- name: create db user conf
+  template:
+    src: ../templates/firefly.cnf.j2
+    dest: /home/firefly/.my.cnf
+- name: start db
+  service:
+    name: mariadb
+    state: started
+    enabled: yes
+- name: make db user
+  command:
+    cmd: "mysql -e \"CREATE USER IF NOT EXISTS 'firefly'@'localhost' IDENTIFIED BY '{{ db_password }}';\""
+- name: make db
+  command:
+    cmd: "mysql -e \"CREATE DATABASE IF NOT EXISTS firefly CHARACTER SET utf8mb4\""
+- name: set priviledges
+  command:
+    cmd: "mysql -e \" GRANT ALL PRIVILEGES ON firefly.* TO 'firefly'@'localhost';\""
+- name: copy php fpm config
+  copy:
+    src: "../files/firefly-fpm.conf"
+    dest: /etc/php-fpm.d/firefly.conf
+  register: fpm_conf
+- name: start fpm-pool
+  service:
+    name: php-fpm
+    state: restarted
+    enabled: yes
+  when: fpm_conf.changed
+# web apps folder
+# set permissions
+- name: fix folder perms
+  file:
+    path: /web/firefly
+    state: directory
+    owner: firefly
+    group: apache2
+    recurse: yes
+- name: apache2 folder
+  file:
+    path: /web/firefly/apache2/
+    state: directory
+    owner: apache2
+    group: apache2
+    recurse: yes
+# build environment vars file
+- name: build environment file
+  template:
+    src: ../templates/.env.j2
+    dest: /web/firefly/.env
+    owner: firefly
+    group: firefly
+
+# mailhog?
+#https://github.com/mailhog/MailHog/releases/download/v1.0.1/MailHog_windows_amd64.exe
+
+# One time only, you need to generate the secret APP_KEY:
+
+# php artisan key:generate
+
+# One time only, the storage/ directory must be linked to the application:
+
+# php artisan storage:link
+
+# Database migrations must be run:
+
+# php artisan migrate --force
+
+# If you want to enable support for location data:
+
+# php artisan import:cities
+
+# If you enabled ActivityPub federation:
+
+# php artisan instance:actor
+
+# If you enabled OAuth:
+
+# php artisan passport:keys
+
+# Routes should be cached whenever the source code changes or whenever you change routes:
+
+# php artisan route:cache
+# php artisan view:cache
+
+# Every time you edit your .env file, you must run this command to have the changes take effect:
+
+# php artisan config:cache

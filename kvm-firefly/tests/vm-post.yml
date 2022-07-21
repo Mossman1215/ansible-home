@@ -1,0 +1,5 @@
+- hosts: firefly-test
+  become: yes
+  tasks:
+    - name: import firefly setup steps
+      import_tasks: ../tasks/firefly.yml

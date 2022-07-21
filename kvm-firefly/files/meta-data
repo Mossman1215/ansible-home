@@ -1,0 +1,3 @@
+#cloud-config
+instance-id: firefly-test
+local-hostname: firefly-test
