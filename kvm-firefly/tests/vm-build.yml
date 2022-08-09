@@ -15,24 +15,29 @@
       file:
         path: '{{ images_dir }}'
         state: directory
-
+      tags: rebuild
     - name: Create VM image from base image
       command: qemu-img create -b {{ base_image }} -f qcow2 -F qcow2 {{ images_dir }}/{{ name }}.img {{ image_capacity }}
-
+    - name: Remove Cached cidata iso
+      file:
+        path: '{{ images_dir }}/{{ name }}-cidata.iso'
+        state: absent
+      tags: rebuild
     - name: Create user-data
       copy:
         src: "{{ '../files' | realpath }}/user-data"
         dest: "{{ images_dir }}/user-data"
         force: yes
-
+      tags: rebuild
     - name: Create meta-data
       copy:
         src: "{{ '../files' | realpath }}/meta-data"
         dest: "{{ images_dir }}/meta-data"
         force: yes
+      tags: rebuild
     - name: Create cloud-init configuration image
-      command: genisoimage -output {{ images_dir }}/{{ name }}-cidata.iso -V cidata -r -J {{ images_dir }}/user-data {{ images_dir }}/meta-data
-
+      command: genisoimage -output {{ images_dir }}/{{ name }}-cidata.iso -V cidata -J {{ images_dir }}/user-data {{ images_dir }}/meta-data
+      tags: rebuild
     - name: Create the VM
       command: virt-install --name={{ name }} --ram={{ ram }} --vcpus={{ vcpus }} --import --disk path={{ images_dir }}/{{ name }}.img,format=qcow2 --disk path={{ images_dir }}/{{ name }}-cidata.iso,device=cdrom --os-variant {{ os }} --network bridge=virbr0,model=virtio --graphics vnc,listen=0.0.0.0 --noautoconsole
       become: yes

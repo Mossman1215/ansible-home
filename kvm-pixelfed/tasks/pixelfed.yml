@@ -1,29 +1,4 @@
 ---
-- name: install rmpfusion gpg
-  rpm_key:
-    state: present
-    key: "https://rpmfusion.org/keys?action=AttachFile&do=get&target=RPM-GPG-KEY-rpmfusion-{{item}}-el-9"
-  loop:
-    - free
-    - nonfree
-- name: install epel gpg
-  rpm_key:
-    state: present
-    key: http://download.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-9
-- name: install rpmfusion epel repos
-  dnf:
-    name: 
-      - https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
-      - https://download1.rpmfusion.org/free/el/rpmfusion-free-release-9.noarch.rpm
-      - https://download1.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-9.noarch.rpm
-    state: present
-#dnf install ffmpeg
-- name: ffmpeg composer
-  dnf:
-    name: 
-      - ffmpeg
-      - composer
-    state: present
 #http://prdownloads.sourceforge.net/optipng/optipng-0.7.7.tar.gz?download
 #configure
 #make install
@@ -31,7 +6,15 @@
 #git clone https://github.com/tjko/jpegoptim.git
 #configure
 #make install
-
+#get rust
+# - name: get rustup
+#   get_url:
+#     url: https://sh.rustup.rs
+#     dest: /opt/rustup.sh
+#     mode: '0700'
+# - name: install rust
+#   command: 
+#     cmd: /opt/rustup.sh -y --profile
 #git clone --recurse-submodules --remote-submodules https://github.com/kornelski/pngquant
 #cargo install?
 - name: pngquant clone
@@ -39,25 +22,21 @@
     accept_newhostkey: yes
     repo: https://github.com/kornelski/pngquant
     dest: /opt/pngquant
-- name: ensure cargo is here
-  dnf:
-    state: latest
-    name: cargo
-- name: pngquant install
-  command:
-    cmd: cargo build --release
-    chdir: /opt/pngquant
-- name: copy pngquant
-  copy:
-    remote_src: yes
-    src: /opt/pngquant/target/release/pngquant
-    dest: /usr/local/bin/
+# - name: pngquant install
+#   command:
+#     cmd: cargo build --release
+#     chdir: /opt/pngquant
+# - name: copy pngquant
+#   copy:
+#     remote_src: yes
+#     src: /opt/pngquant/target/release/pngquant
+#     dest: /usr/local/bin/
 - name: ensure dir
   file:
     path: /web/pixelfed
     state: directory
     owner: pixelfed
-    group: nginx
+    group: www-data
 - name: pixelfed clone
   git:
     accept_newhostkey: yes
@@ -109,17 +88,6 @@
     state: restarted
     enabled: yes
   when: nginx_conf.changed
-- name: copy php fpm config
-  copy:
-    src: "../files/pixelfed-fpm.conf"
-    dest: /etc/php-fpm.d/pixelfed.conf
-  register: fpm_conf
-- name: start fpm-pool
-  service:
-    name: php-fpm
-    state: restarted
-    enabled: yes
-  when: fpm_conf.changed
 # composer install
 - name: composer install
   command:
@@ -133,14 +101,21 @@
     path: /web/pixelfed
     state: directory
     owner: pixelfed
-    group: nginx
+    group: www-data
     recurse: yes
 - name: nginx folder
   file:
     path: /web/pixelfed/nginx/
     state: directory
-    owner: nginx
-    group: nginx
+    owner: www-data
+    group: www-data
+    recurse: yes
+- name: nginx folder
+  file:
+    path: /web/pixelfed/nginx/tmp
+    state: directory
+    owner: www-data
+    group: www-data
     recurse: yes
 # build environment vars file
 - name: build environment file
@@ -149,6 +124,16 @@
     dest: /web/pixelfed/.env
     owner: pixelfed
     group: pixelfed
+- name: copy php fpm config
+  copy:
+    src: "../files/pixelfed-fpm.conf"
+    dest: /etc/php/8.0/fpm/pool.d/pixelfed.conf
+  register: fpm_conf
+- name: start fpm-pool
+  service:
+    name: php8.0-fpm
+    state: restarted
+    enabled: yes
 
 # mailhog?
 #https://github.com/mailhog/MailHog/releases/download/v1.0.1/MailHog_windows_amd64.exe

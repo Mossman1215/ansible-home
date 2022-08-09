@@ -3,3 +3,4 @@ hosts.ini
 *.json
 bertvv.samba/*
 .vagrant
+roles/

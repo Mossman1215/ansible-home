@@ -10,27 +10,37 @@ users:
     shell: /bin/bash
   - name: pixelfed
     shell: /bin/bash
-package_upgrade: true
+#workaround not having gpg but needing it to configure apt
+bootcmd:
+  - DEBIAN_FRONTEND=noninteractive apt-get -yq update
+  - DEBIAN_FRONTEND=noninteractive apt-get -yq install gnupg
 packages:
- - openssh-server
- - mariadb
+ - mariadb-client
  - mariadb-server
- - php
- - redis
  - nginx
- - gd
  - git
- - clang
- - libjpeg-turbo-devel
- - cargo
  - wget
- - php-bcmath
- - php-sodium
+ - php8.0
+ - php8.0-bcmath
+ - php8.0-fpm
+ - php8.0-mysql
+ - php8.0-intl
+ - php8.0-curl
+ - php8.0-xml
+ - php8.0-mbstring
+ - php8.0-zip
+ - php8.0-gd
  - nano
+ - composer
+ - clang
+ - libjpeg62-turbo-dev
  - imagemagick
- - php-mysqlnd
- - php-phpiredis
  - redis
- - git
+apt:
+  preserve_sources_list: true
+  sources:
+    sury-php:
+      source: "deb https://packages.sury.org/php/ bullseye main"
+      keyid: 1505 8500 A023 5D97 F5D1  0063 B188 E2B6 95BD 4743
+package_upgrade: true
 timezone: Pacific/Auckland
-

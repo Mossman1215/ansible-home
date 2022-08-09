@@ -1,11 +1,11 @@
 ---
 - hosts: localhost
   vars:
-    - base_image: "{{ '../files/images/CentOS-Stream-GenericCloud-9-20220425.0.x86_64.qcow2' | realpath }}"
+    - base_image: "{{ '../files/images/debian-11-generic-amd64.qcow2' | realpath }}"
     - images_path: "../files/{{ name }}/" 
     - images_dir: "{{ images_path | realpath }}"
     - host: localhost
-    - os: centos-stream9
+    - os: debian11
     - ram: 2048
     - name: pixelfed-test
     - image_capacity: 10G
