@@ -8,13 +8,13 @@
       node:
       - targets:
         - 192.168.1.14:9100
-        - 192.168.1.22:9100
-        - 192.168.1.24:9100 
+        - 192.168.1.22:9100 
         - 192.168.1.23:9100
         - 192.168.1.112:9100
         - 192.168.1.40:9182
-        - 192.168.1.22:8888
         - 100.107.131.92:9100
+        - 192.168.1.121:9100
+        - 100.102.28.35:9100
         labels:
           env: home
     prometheus_scrape_configs:
@@ -31,13 +31,13 @@
         - source_labels: [__param_target]
           target_label: instance
         - target_label: __address__
-          replacement: 192.168.1.24:9116 
+          replacement: 192.168.1.121:9116 
     - job_name: readynas-snmp
       static_configs:
       - targets:
         - 192.168.1.90
       params:
-        module: []
+        module: [if_mib]
       metrics_path: /snmp
       relabel_configs:
         - source_labels: [__address__]
@@ -45,25 +45,23 @@
         - source_labels: [__param_target]
           target_label: instance
         - target_label: __address__
-          replacement: 192.168.1.24:9116
+          replacement: 192.168.1.121:9116
     - job_name: "node-file-servicediscovery"
       file_sd_configs:
         - files:
             - "{{ prometheus_config_dir }}/file_sd/node.yml" # This line loads file created from `prometheus_targets
     - job_name: 'blackbox'
+      scrape_interval: 300s
       metrics_path: /probe
       params:
         module: [http_2xx]  # Look for a HTTP 200 response.
-      scrape_interval: 24h
       static_configs:
         - targets:
-          - https://blog.mountainmoss.nz   # blog
-          - http://grafana.mountainmoss.nz # grafana
+          - http://192.168.178.124    # Target to probe with http.
       relabel_configs:
         - source_labels: [__address__]
           target_label: __param_target
         - source_labels: [__param_target]
           target_label: instance
         - target_label: __address__
-          replacement: "[::]:9115"  # The blackbox exporter's real hostname:port.
-      
+          replacement: 100.107.131.92:9115  # The blackbox exporter's real hostname:port.
