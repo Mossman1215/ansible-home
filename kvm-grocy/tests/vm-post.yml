@@ -1,0 +1,5 @@
+- hosts: grocy-test
+  become: yes
+  tasks:
+    - name: import grocy setup steps
+      import_tasks: ../tasks/grocy.yml

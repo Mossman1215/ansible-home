@@ -1,0 +1,43 @@
+#cloud-config
+users:
+  - default
+  - name: moss
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys: 
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDuRQQ9rBNPPGEx3EOg7zBBEGdRArgrRCFXUgzir65a0hYIH/d3PhGxzxo4qOOwrJConr0EKgFvz2qkWXuLoE9aQKe351kfKmYkOFtmwdXjYDD5ZNxgROVXedn91uZF4/py770mq5yIF9LHKv5LpiELHBPReFI78tWY8UtNzGLCRypDmeetsXvRws9D99MFDpaKkt/3gUK1vgcBQMlZtf1Jhs962YfEjthowlD8bxHuUzRnXJ2kyNLyoDhmDq5WjtUlJFDIILqmVYZFdQGlmy+69Kcubs6KEpNqSsNKe7McIyWx8nvQRIHTs1hT0T/YkWKUze0x8Vl4rWLDfzglj0sx moss@Moss-LAPTOP
+      - ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlzdHAzODQAAABhBGko2N+Ar1T++MnKqrQpA7sMi3ouDwxfgOA88x/YiIvW5cJXH6q9X0mYg6XfELPwNVYzc8+wUkenLMzDh40nNWHc3Mb7xOaR8+svuwbmqfN6gPLbKsjgiqOldV9hz9OZhQ== JuiceSSH
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCoZdxEAqM3ifpWKlnqV6z7SsyKAyjjwpbu1xUs21mlt9GkxYjkgQU7ivHSw0xnICCczbUQcHF0nkKaIBXZRhmBHo9SjiVGZ8XmarCrvYqg9A5CIkzTrXMpnP45JLG0IrV7ijltKAShjXBQeAa9/Jyk+LitAyZuZfxAloQCTrlcHXKA6eWW2gwmD3w+zhvDJj8Ndr0YAFEvpaYy4S+iXic9Q+4cOL49wKD7nCGXrDc5Xq16xHNpmsMVWqIkPEgsi0TnuiMkats0r2E01J3ceJjBCI4SGpGucO5Tn3vfVuFzh5n4G8KR0AtTsiQyrGMXVRYUnwBjufG/9Ru5JEHD70o9 moss@Moss-T460p
+    shell: /bin/bash
+  - name: snipeit
+    shell: /bin/bash
+#workaround not having gpg but needing it to configure apt
+bootcmd:
+  - DEBIAN_FRONTEND=noninteractive apt-get -yq update
+  - DEBIAN_FRONTEND=noninteractive apt-get -yq install gnupg
+packages:
+ - mariadb-client
+ - mariadb-server
+ - nginx
+ - git
+ - wget
+ - php8.0
+ - php8.0-bcmath
+ - php8.0-fpm
+ - php8.0-mysql
+ - php8.0-intl
+ - php8.0-curl
+ - php8.0-xml
+ - php8.0-mbstring
+ - php8.0-zip
+ - php8.0-gd
+ - nano
+ - composer
+apt:
+  preserve_sources_list: true
+  sources:
+    sury-php:
+      source: "deb https://packages.sury.org/php/ bullseye main"
+      keyid: 1505 8500 A023 5D97 F5D1  0063 B188 E2B6 95BD 4743
+package_upgrade: true
+timezone: Pacific/Auckland
+

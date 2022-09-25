@@ -1,0 +1,5 @@
+- hosts: snipeit-test
+  become: yes
+  tasks:
+    - name: import snipeit setup steps
+      import_tasks: ../tasks/snipeit.yml

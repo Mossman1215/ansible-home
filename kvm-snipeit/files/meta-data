@@ -1,0 +1,3 @@
+#cloud-config
+instance-id: snipeit-test
+local-hostname: snipeit-test

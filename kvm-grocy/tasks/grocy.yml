@@ -1,0 +1,82 @@
+---
+- name: ensure dir
+  file:
+    path: /web/grocy
+    state: directory
+    owner: grocy
+    group: www-data
+- name: grocy clone
+  git: 
+    repo: https://github.com/grocy/grocy.git
+    dest: /web/grocy
+    single_branch: yes
+    version: 'v3.3.1'
+# - name: composer install
+#   command: 
+#     cmd: composer install --prefer-dist --no-dev 
+#     chdir: /web/grocy/
+#     creates: /web/grocy/vendor/autoload.php
+#sudo chmod -R 775 grocy-iii/storage
+- name: build config.php file
+  template:
+    src: ../templates/config.php.j2
+    dest: /web/grocy/data/config.php
+- name: copy php fpm config
+  copy:
+    src: "../files/grocy-fpm.conf"
+    dest: /etc/php/8.0/fpm/pool.d/grocy.conf
+  register: fpm_conf
+- name: start fpm-pool
+  service:
+    name: php8.0-fpm
+    state: restarted
+    enabled: yes
+  when: fpm_conf.changed
+# web apps folder
+# set permissions
+- name: fix folder perms
+  file:
+    path: /web/grocy
+    state: directory
+    owner: grocy
+    group: www-data
+    recurse: yes
+- name: www-data folder
+  file:
+    path: /web/grocy/www-data/
+    state: directory
+    owner: www-data
+    group: www-data
+    recurse: yes
+# build environment vars file
+- name: build environment file
+  template:
+    src: ../templates/.env.j2
+    dest: /web/grocy/.env
+    owner: grocy
+    group: grocy
+- name: nginx folder
+  file:
+    path: /web/grocy/nginx/
+    state: directory
+    owner: www-data
+    group: www-data
+    recurse: yes
+- name: nginx folder
+  file:
+    path: /web/grocy/nginx/tmp
+    state: directory
+    owner: www-data
+    group: www-data
+    recurse: yes
+- name: copy nginx config files
+  copy:
+    src: "../files/grocy-nginx.conf"
+    dest: /etc/nginx/sites-enabled/grocy.conf
+  register: nginx_conf
+- name: start nginx
+  service:
+    name: nginx
+    state: restarted
+    enabled: yes
+  when: nginx_conf.changed

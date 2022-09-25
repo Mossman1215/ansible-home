@@ -1,0 +1,105 @@
+---
+- name: ensure dir
+  file:
+    path: /web/snipeit
+    state: directory
+    owner: snipeit
+    group: www-data
+- name: snipeit clone
+  git: 
+    repo: https://github.com/snipe/snipe-it
+    dest: /web/snipeit
+    single_branch: yes
+    version: 'master'
+# - name: composer install
+#   command: 
+#     cmd: composer install --prefer-dist --no-dev 
+#     chdir: /web/snipeit/
+#     creates: /web/snipeit/vendor/autoload.php
+#sudo chmod -R 775 snipeit-iii/storage
+#setup database
+- name: ensure dir
+  file:
+    path: /etc/mysql
+    state: directory
+- name: build my.cnf file
+  template:
+    src: ../templates/my.cnf.j2
+    dest: /etc/mysql/my.cnf
+- name: create db user conf
+  template:
+    src: ../templates/snipeit.cnf.j2
+    dest: /home/snipeit/.my.cnf
+- name: start db
+  service:
+    name: mariadb
+    state: started
+    enabled: yes
+- name: make db user
+  command:
+    cmd: "mysql -e \"CREATE USER IF NOT EXISTS 'snipeit'@'localhost' IDENTIFIED BY '{{ db_password }}';\""
+- name: make db
+  command:
+    cmd: "mysql -e \"CREATE DATABASE IF NOT EXISTS snipeit CHARACTER SET utf8mb4\""
+- name: set priviledges
+  command:
+    cmd: "mysql -e \" GRANT ALL PRIVILEGES ON snipeit.* TO 'snipeit'@'localhost';\""
+- name: copy php fpm config
+  copy:
+    src: "../files/snipeit-fpm.conf"
+    dest: /etc/php/8.0/fpm/pool.d/snipeit.conf
+  register: fpm_conf
+- name: start fpm-pool
+  service:
+    name: php8.0-fpm
+    state: restarted
+    enabled: yes
+  when: fpm_conf.changed
+# web apps folder
+# set permissions
+- name: fix folder perms
+  file:
+    path: /web/snipeit
+    state: directory
+    owner: snipeit
+    group: www-data
+    recurse: yes
+- name: www-data folder
+  file:
+    path: /web/snipeit/www-data/
+    state: directory
+    owner: www-data
+    group: www-data
+    recurse: yes
+# build environment vars file
+- name: build environment file
+  template:
+    src: ../templates/.env.j2
+    dest: /web/snipeit/.env
+    owner: snipeit
+    group: snipeit
+- name: nginx folder
+  file:
+    path: /web/snipeit/nginx/
+    state: directory
+    owner: www-data
+    group: www-data
+    recurse: yes
+- name: nginx folder
+  file:
+    path: /web/snipeit/nginx/tmp
+    state: directory
+    owner: www-data
+    group: www-data
+    recurse: yes
+- name: copy nginx config files
+  copy:
+    src: "../files/snipeit-nginx.conf"
+    dest: /etc/nginx/sites-enabled/snipeit.conf
+  register: nginx_conf
+- name: start nginx
+  service:
+    name: nginx
+    state: restarted
+    enabled: yes
+  when: nginx_conf.changed
