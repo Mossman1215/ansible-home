@@ -57,7 +57,7 @@
         module: [http_2xx]  # Look for a HTTP 200 response.
       static_configs:
         - targets:
-          - http://192.168.178.124    # Target to probe with http.
+          - http://192.168.1.82    # Target to probe with http.
       relabel_configs:
         - source_labels: [__address__]
           target_label: __param_target
