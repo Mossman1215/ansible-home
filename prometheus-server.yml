@@ -4,20 +4,32 @@
   roles:
   - cloudalchemy.prometheus
   vars:
+    prometheus_version: latest
+    prometheus_storage_retention: 90d
+    prometheus_config_flags_extra:
+      web.enable-remote-write-receiver:
     prometheus_targets:
       node:
       - targets:
         - 192.168.1.14:9100
         - 192.168.1.22:9100 
-        - 192.168.1.23:9100
         - 192.168.1.112:9100
         - 192.168.1.40:9182
         - 100.107.131.92:9100
         - 192.168.1.121:9100
         - 100.102.28.35:9100
+        - 192.168.1.135:9100
         labels:
           env: home
     prometheus_scrape_configs:
+    - job_name: nut-primary
+      metrics_path: /ups_metrics
+      static_configs:
+        - targets: ['192.168.1.22:9199']
+          labels:
+            ups:  "nutdev1"
+      params:
+        ups: [ "nutdev1" ]
     - job_name: router-snmp
       static_configs:
       - targets:
@@ -32,6 +44,20 @@
           target_label: instance
         - target_label: __address__
           replacement: 192.168.1.121:9116 
+    - job_name: mikrotik
+      static_configs:
+      - targets:
+        - 192.168.1.254
+      metrics_path: /snmp
+      params:
+        module: [mikrotik]
+      relabel_configs:
+        - source_labels: [__address__]
+          target_label: __param_target
+        - source_labels: [__param_target]
+          target_label: instance
+        - target_label: __address__
+          replacement: 192.168.1.121:9116
     - job_name: readynas-snmp
       static_configs:
       - targets:
