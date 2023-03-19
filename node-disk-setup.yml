@@ -1,0 +1,23 @@
+---
+- hosts: [dnf_based:!vultrgw]
+  become: true
+  tasks:
+    - name: Get NVME disk UUID
+      ansible.builtin.command:
+        cmd: blkid -s UUID -o value /dev/nvme0n1
+      register: uuid
+    - name: NVME disk
+      ansible.posix.mount:
+        path: /mnt/nvme
+        src: "UUID={{ uuid.stdout_lines }}"
+        fstype: xfs
+        opts: defaults
+        state: present
+    - name: Mount NFS volumes with noauto according to boot option
+      ansible.posix.mount:
+        src: 192.168.1.90:/disk/vmstorage
+        path: /mnt/massnas
+        opts: rw,sync,hard
+        boot: false
+        state: mounted
+        fstype: nfs
