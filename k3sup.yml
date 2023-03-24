@@ -1,0 +1,11 @@
+---
+- hosts: [dnf_based:!vultrgw]
+  become: true
+  tasks:
+  - name: Allow sudo without password
+    community.general.sudoers:
+      name: sudo all
+      state: present
+      user: moss
+      commands: ALL
+      nopassword: false
